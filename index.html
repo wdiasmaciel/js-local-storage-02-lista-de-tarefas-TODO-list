@@ -1,0 +1,108 @@
+<html>
+  <head></head>
+  <style>
+    html,
+    body {
+      font-size: 16px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .completed {
+      color: red;
+      text-decoration:line-through;  
+    }
+  </style>
+  <body>
+    <input type="text" id="taskInput" />
+    <button id="addTaskBtn">Ok</button>
+    <ul id="taskList"></ul>
+    <script>
+      // Seleciona os elementos do DOM
+      const taskInput = document.getElementById("taskInput");
+      const addTaskBtn = document.getElementById("addTaskBtn");
+      const taskList = document.getElementById("taskList");
+
+      // Função para carregar as tarefas do localStorage
+      function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        tasks.forEach((task) => {
+          createTaskElement(task);
+        });
+      }
+
+      // Função para criar um elemento de tarefa
+      function createTaskElement(task) {
+        const li = document.createElement("li");
+        li.textContent = task.text; // Adiciona o texto da tarefa
+        if (task.completed) {
+          li.classList.add("completed"); // Adiciona classe se a tarefa estiver concluída
+        }
+
+        // Botão para remover a tarefa
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remover";
+        removeBtn.className = "remove-btn";
+        removeBtn.onclick = () => {
+          removeTask(task.text); // Remove a tarefa do localStorage
+          li.remove(); // Remove o elemento da lista
+        };
+
+        // Marcar a tarefa como concluída
+        li.onclick = () => {
+          task.completed = !task.completed; // Alterna o estado da tarefa
+          li.classList.toggle("completed"); // Atualiza a classe
+          updateLocalStorage(); // Atualiza o localStorage
+        };
+
+        li.appendChild(removeBtn); // Adiciona o botão de remover ao li
+        taskList.appendChild(li); // Adiciona o li à lista de tarefas
+      }
+
+      // Função para adicionar uma nova tarefa
+      function addTask() {
+        const taskText = taskInput.value.trim(); // Obtém o texto da tarefa
+        if (taskText === "") {
+          alert("Por favor, insira uma tarefa."); // Validação para campo vazio
+          return;
+        }
+
+        const task = { text: taskText, completed: false }; // Cria objeto da tarefa
+        createTaskElement(task); // Cria o elemento da tarefa na UI
+        taskInput.value = ""; // Limpa o campo de entrada
+        saveTask(task); // Salva a nova tarefa no localStorage
+      }
+
+      // Função para salvar a tarefa no localStorage
+      function saveTask(task) {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || []; // Obtém tarefas existentes
+        tasks.push(task); // Adiciona nova tarefa
+        localStorage.setItem("tasks", JSON.stringify(tasks)); // Atualiza localStorage
+      }
+
+      // Função para remover a tarefa do localStorage
+      function removeTask(taskText) {
+        let tasks = JSON.parse(localStorage.getItem("tasks")) || []; // Obtém tarefas existentes
+        tasks = tasks.filter((task) => task.text !== taskText); // Filtra a tarefa a ser removida
+        localStorage.setItem("tasks", JSON.stringify(tasks)); // Atualiza localStorage
+      }
+
+      // Função para atualizar o localStorage
+      function updateLocalStorage() {
+        const tasks = [];
+        document.querySelectorAll("li").forEach((li) => {
+          const task = {
+            text: li.firstChild.textContent,
+            completed: li.classList.contains("completed"),
+          };
+          tasks.push(task); // Adiciona cada tarefa ao array
+        });
+        localStorage.setItem("tasks", JSON.stringify(tasks)); // Atualiza localStorage
+      }
+
+      // Evento para adicionar uma nova tarefa ao clicar no botão
+      addTaskBtn.addEventListener("click", addTask);
+
+      // Carrega as tarefas ao iniciar a aplicação
+      loadTasks();
+    </script>
+  </body>
+</html>
